@@ -13,7 +13,7 @@
 
 <meta name="date" content="2024-08-16" />
 
-<title>final project machine learning</title>
+<title>Final Project: Machine Learning</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -350,7 +350,7 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">final project machine learning</h1>
+<h1 class="title toc-ignore">Final Project: Machine Learning</h1>
 <h4 class="author">Felix G Lopez</h4>
 <h4 class="date">2024-08-16</h4>
 
@@ -362,191 +362,375 @@ display: none;
 <div id="a-course-in-the-johns-hopkins-coursera-data-science-specialization" class="section level4">
 <h4>A course in the Johns Hopkins Coursera Data Science
 specialization</h4>
-<p>Author: fss14142 Summary. This analysis corresponds to the Project
-Assignment for the Practical Machine Learning course of the John Hopkins
-Data Science Specialization at Coursera. The project uses data from the
-Weight Lifting Exercises (WLE) Dataset (see <a href="http://groupware.les.inf.puc-rio.br/har" class="uri">http://groupware.les.inf.puc-rio.br/har</a> and also the
-References section below.) According to the WLE website, six
-participants were asked to perform one set of 10 repetitions of the
-Unilateral Dumbbell Biceps Curl in five different fashions, identified
-as classes A, B, C, D and E. Class A corresponds to a correct execution
-of the exercise, and the remaining five classes identify common mistakes
-in this weight lifting exercise. Several sensors were used to collect
-data about the quality of the exercise execution. The goal of this
-project is to obtain a prediction algorithm that takes such a set of
-sensor readings and correctly predicts the corresponding class (A to
-E).</p>
+</div>
+<div id="summary" class="section level4">
+<h4>Summary</h4>
+<p>This report presents an analysis that corresponds to the Project
+Assignment for the Practical Machine Learning course of the Johns
+Hopkins Data Science Specialization at Coursera. The project uses data
+from the Weight Lifting Exercises (WLE) Dataset (see <a href="http://groupware.les.inf.puc-rio.br/har" class="uri">http://groupware.les.inf.puc-rio.br/har</a> and also the
+References section below.)</p>
+<p>According to the WLE website, six participants were asked to perform
+one set of 10 repetitions of the Unilateral Dumbbell Biceps Curl in five
+different fashions, identified as classes A, B, C, D and E. Class A
+corresponds to a correct execution of the exercise, and the remaining
+five classes identify common mistakes in this weight lifting exercise.
+Several sensors were used to collect data about the quality of the
+exercise execution. The goal of this project is to obtain a prediction
+algorithm that takes such a set of sensor readings and correctly
+predicts the corresponding class (A to E).</p>
 <p>The following analysis uses a random forest prediction algorithm to
-accomplish this task, after some data cleaning. The results of the
-analysis confirm that the model provided by this algorithm achieves a
-high prediction accuracy (as indicated by several prediction quality
+accomplish this task, after data cleaning. The results of the analysis
+confirm that the model provided by this algorithm achieves a high
+prediction accuracy (as indicated by several prediction quality
 indicators).</p>
-<p>Discussion and Code for the Analysis. Data File Loading and Initial
-Data Exploration. The project assignment includes two data files (in csv
-format), that can be downloaded from these links:</p>
-<p>Training data: pml-training.csv. Testing data: pml-testing.csv. The
-following code assumes that these data files are located in your R
-working directory. The pml-training.csv file contains both sensor data
-and execution type data, but the pml-testing.csv file does not contain
-execution type data. As an additional part of the assignment, we have to
-use the prediction algorithm trained on the data from the
-pml-testing.csv file, in order to predict the execution type for the
-data in the pml-testing.csv file.</p>
+</div>
+<div id="discussion-and-code-for-the-analysis." class="section level4">
+<h4>Discussion and Code for the Analysis.</h4>
+<p>Data File Loading and Initial Data Exploration.</p>
+<p>The project assignment includes two data files (in csv format), that
+can be downloaded from these links:</p>
+<pre class="r"><code># dowloading training dataset
+fileUrl &lt;- &quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv&quot;
+download.file(fileUrl, destfile = &quot;pml-training.csv&quot;)
+pml_training &lt;- read.csv(&quot;pml-training.csv&quot;, 
+                               header = TRUE, sep = &quot;,&quot;, 
+                               na.strings = c(&quot;NA&quot;, &quot;#DIV/0!&quot;))</code></pre>
+<pre class="r"><code># downloading testing dataset
+file2Url &lt;- &quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv&quot;
+download.file(file2Url, destfile = &quot;pml-testing.csv&quot;)
+pml_testing &lt;- read.csv(&quot;pml-testing.csv&quot;)</code></pre>
+<p>The pml-training.csv file contains both sensor data and execution
+type data, but the pml-testing.csv file does not contain execution type
+data. As an additional part of the assignment, we have to use the
+prediction algorithm trained on the data from the pml-testing.csv file,
+in order to predict the execution type for the data in the
+pml-testing.csv file.</p>
 <p>In this assignment there is no codebook for the data files. However,
-relevant information can be obtained from the sources cited in the
-references. In particular, we know that four types of sensors were used
-in the experiment, and we will see below that this is reflected in the
-names of many of the variables in the data set.</p>
-<p>Let us begin by reading the pml-training.csv file into R. An initial
-inspection of the data file (using e.g. a text editor or a spreadsheet
-program) shows that:</p>
+relevant information can be obtained from the sources cited, here:</p>
+<p>[<a href="https://web.archive.org/web/20161224072740/http:/groupware.les.inf.puc-rio.br/har" class="uri">https://web.archive.org/web/20161224072740/http:/groupware.les.inf.puc-rio.br/har</a>]</p>
+<p>In particular, we know that four types of sensors were used in the
+experiment, and we will see below that this is reflected in the names of
+many of the variables in the data set.</p>
+<p>First I read the pml-training.csv file into R. An initial inspection
+of the data file (using e.g. a text editor or a spreadsheet program)
+shows that:</p>
 <p>The data columns in the file are separated by commas. There are many
 missing values. These missing values come in two versions: the usual NA
 value, but also as values of the form “#DIV/0!” (this is probably the
-result of an attempt to divide by zero in a spreadsheet). The header
-line contains the names of the variables in the data set. The first
-column is not really a variable, it just contains the row number. Taking
-all that into account, we read the csv into a data frame in R as
-follows:</p>
-<p>pml_training_data = read.table(“data/pml-training.csv”, header =
-TRUE, sep = “,”, na.strings = c(“NA”, “#DIV/0!”)) dim(pml_training_data)
-## [1] 19622 160 As you can see, the data frame has 19622 rows
-(observations) and 160 columns (variables). Most of the variables (152
-out of 160) correspond to sensor readings for one of the four sensors.
-Those sensor-reading variable names (columns 8 to 159) include one of
-the following strings to identify the corresponding sensor:</p>
-<p>_belt _arm _dumbbell _forearm The last column in the data frame
-(column 160) contains the values A to E of the classe variable that
-indicates the execution type of the exercise.</p>
+result of an attempt to divide by zero in a spreadsheet).</p>
+<p>The header line contains the names of the variables in the data set.
+The first column is not really a variable, it just contains the row
+number. Taking all that into account, we read the csv into a data frame
+in R as follows:</p>
+<p>19622, 160</p>
+<p>As you can see, the data frame has 19622 rows (observations) and 160
+columns (variables). Most of the variables (152 out of 160) correspond
+to sensor readings for one of the four sensors. Those sensor-reading
+variable names (columns 8 to 159) include one of the following strings
+to identify the corresponding sensor:</p>
+<p>_belt _arm _dumbbell _forearm</p>
+<p>The last column in the data frame (column 160) contains the values A
+to E of the classe variable that indicates the execution type of the
+exercise.</p>
 <p>Finally, the first seven columns contain:</p>
 <p>column 1: the row index (not really a variable). column 2: the
 user_name variable; that is, the name of the person performing the
 exercise. columns 3 to 7: variables related to the time window for that
 particular sensor reading. See Section 5.1 of the paper in the
-references for more details on these variables. Restricting the
-Variables to Sensor-related Ones. Thus, the data in the first seven
-columns are not sensor readings. For the prediction purposes of this
-analysis, we will remove the data in those columns from the data frame
-(using grep to select the sensor-related columns).</p>
-<p>sensorColumns = grep(pattern = “_belt|_arm|_dumbbell|_forearm”,
-names(pml_training_data)) length(sensorColumns) ## [1] 152 data =
-pml_training_data[, c(sensorColumns,160)] dim(data) ## [1] 19622 153 See
-the Notes section below for further discussion of this choice of
+references for more details on these variables.</p>
+<p>Restricting the Variables to Sensor-related Ones. Thus, the data in
+the first seven columns are not sensor readings. For the prediction
+purposes of this analysis, we will remove the data in those columns from
+the data frame (using grep to select the sensor-related columns).</p>
+<pre class="r"><code>sensorColumns = grep(pattern = &quot;_belt|_arm|_dumbbell|_forearm&quot;, names(pml_training))
+  length(sensorColumns)</code></pre>
+<pre><code>## [1] 152</code></pre>
+<pre class="r"><code>## [1] 152
+  data = pml_training[, c(sensorColumns,160)]
+  dim(data)</code></pre>
+<pre><code>## [1] 19622   153</code></pre>
+<pre class="r"><code>## [1] 19622   153</code></pre>
+<p>See the Notes section below for further discussion of this choice of
 variables.</p>
-<p>Handling NA Values. The selected sensor data columns still include
-many variables whose values are NA for almost all obervations. To remove
-those variables we do the following:</p>
-<p>missingData = is.na(data)</p>
-<p>omitColumns = which(colSums(missingData) &gt; 19000)</p>
-<p>data = data[, -omitColumns]</p>
-<p>dim(data) ## [1] 19622 53 As you can see, only 53 predictor variables
-(plus classe) remain in the data set. Next we check that the resulting
-data frame has no missing values with:</p>
-<p>table(complete.cases(data)) ## ## TRUE ## 19622 All of the remaining
-predictor variables are of numeric type:</p>
-<p>table(sapply(data[1,], class)) ## ## factor integer numeric ## 1 25
-27 Data Splitting and Discussion of Preprocessing. Following the usual
-practice in Machine Learning, we will split our data into a training
-data set (75% of the total cases) and a testing data set (with the
-remaining cases; the latter should not be confused with the data in the
-pml-testing.csv file). This will allow us to estimate the out of sample
-error of our predictor. We will use the caret package for this purpose,
-and we begin by setting the seed to ensure reproducibility.</p>
-<p>set.seed(2014) library(caret) ## Loading required package: lattice ##
-Loading required package: ggplot2 inTrain &lt;-
-createDataPartition(y=data$classe, p=0.75, list=FALSE)</p>
-<p>training &lt;- data[inTrain,] dim(training) ## [1] 14718 53 testing
-&lt;- data[-inTrain,] dim(testing) ## [1] 4904 53 Some remarks are in
-order, before proceeding to train our predictor:</p>
+</div>
+<div id="handling-na-values." class="section level4">
+<h4>Handling NA Values.</h4>
+<p>The selected sensor data columns still include many variables whose
+values are NA for almost all observations. To remove those variables we
+do the following:</p>
+<pre class="r"><code>missingData = is.na(data)
+
+omitColumns = which(colSums(missingData) &gt; 19000)
+
+data = data[, -omitColumns]
+
+dim(data)</code></pre>
+<pre><code>## [1] 19622    53</code></pre>
+<pre class="r"><code>## [1] 19622    53</code></pre>
+<p>As you can see, only 53 predictor variables (plus classe) remain in
+the data set. Next we check that the resulting data frame has no missing
+values with:</p>
+<pre class="r"><code>table(complete.cases(data))</code></pre>
+<pre><code>## 
+##  TRUE 
+## 19622</code></pre>
+<pre class="r"><code>## 
+##  TRUE 
+## 19622</code></pre>
+<p>All of the remaining predictor variables are of numeric type:</p>
+<pre class="r"><code>table(sapply(data[1,], class))</code></pre>
+<pre><code>## 
+## character   integer   numeric 
+##         1        25        27</code></pre>
+<pre class="r"><code>## 
+##  factor integer numeric 
+##       1      25      27</code></pre>
+</div>
+<div id="data-splitting-and-discussion-of-preprocessing." class="section level4">
+<h4>Data Splitting and Discussion of Preprocessing.</h4>
+<p>Following the most common practice in Machine Learning, I split our
+data into a training data set (75% of the total cases) and a testing
+data set (with the remaining cases; the latter should not be confused
+with the data in the pml-testing.csv file). This will allow me to
+estimate the out of sample error of our predictor. I use the caret
+package for this purpose, and begin by setting the seed to ensure
+reproducibility.</p>
+<pre class="r"><code>set.seed(2014)
+library(caret)</code></pre>
+<pre><code>## Loading required package: ggplot2</code></pre>
+<pre><code>## Loading required package: lattice</code></pre>
+<pre class="r"><code>## Loading required package: lattice
+## Loading required package: ggplot2
+inTrain &lt;- createDataPartition(y=data$classe, p=0.75, list=FALSE)
+
+training &lt;- data[inTrain,]
+dim(training)</code></pre>
+<pre><code>## [1] 14718    53</code></pre>
+<pre class="r"><code>## [1] 14718    53
+testing &lt;- data[-inTrain,]
+dim(testing)</code></pre>
+<pre><code>## [1] 4904   53</code></pre>
+<pre class="r"><code>## [1] 4904   53</code></pre>
+<p>Some remarks are in order, before proceeding to train our
+predictor:</p>
 <p>Since we are going to apply a non-parametric model (random forests),
 no preprocessing is needed to transform the variables. The possible use
 of PCA to further reduce the number of features is discussed in the
 Notes section below. Even though the assignment rubric mentions it,
 Cross Validation is not necessary for such a direct construction of
 random forests (in short, because the random forest construction already
-includes enough subsampling). See the discussion in this thread of the
-R-help mailing list, and Section 8.2 of An Introduction to Statistical
-Learning (see References below). Thus, we are ready to continue building
-the predictor.</p>
+includes enough subsampling).</p>
+<p>Thus, we are ready to continue building the predictor.</p>
 <p>Training the Predictor. We will use the randomForest function (in the
 randomForest package) to fit the predictor to the training set. In the
 computer used for this analysis (see the Notes section below for
 details) the default number of trees (500) gives a reasonable tradeoff
 between training time and accuracy. In more powerful machines that
 number can be increased for (slightly) better predictions.</p>
-<p>library(randomForest) ## randomForest 4.6-10 ## Type rfNews() to see
-new features/changes/bug fixes. time1 = proc.time() (randForest =
-randomForest(classe~., data=training, ntree = 500)) ## ## Call: ##
-randomForest(formula = classe ~ ., data = training, ntree = 500) ## Type
-of random forest: classification ## Number of trees: 500 ## No. of
-variables tried at each split: 7 ## ## OOB estimate of error rate: 0.49%
-## Confusion matrix: ## A B C D E class.error ## A 4181 4 0 0 0
-0.0009558 ## B 20 2823 5 0 0 0.0087781 ## C 0 7 2559 1 0 0.0031165 ## D
-0 0 27 2384 1 0.0116086 ## E 0 0 3 4 2699 0.0025868 time2 = proc.time()
-(time = time2 - time1) ## user system elapsed ## 151.38 0.81 153.99 As
-the above results show, the resulting predictor has a quite low OOB
-(out-of-bag) error estimate. The confusion matrix for the training set
-indicates that the predictor is accurate on that set.</p>
-<p>Applying the Model to the Testing Subsample. After training the
-predictor we use it on the testing subsample we constructed before, to
-get an estimate of its out of sample error.</p>
-<p>predictionTesting = predict(randForest, newdata = testing) The error
-estimate can be obtained with the confusionMatrix function of the caret
-package:</p>
-<p>confusionMatrix(predictionTesting, testing$classe) ## Confusion
-Matrix and Statistics ## ## Reference ## Prediction A B C D E ## A 1395
-7 0 0 0 ## B 0 939 2 0 0 ## C 0 3 851 14 3 ## D 0 0 2 789 1 ## E 0 0 0 1
-897 ## ## Overall Statistics ##<br />
-## Accuracy : 0.993<br />
-## 95% CI : (0.991, 0.995) ## No Information Rate : 0.284<br />
-## P-Value [Acc &gt; NIR] : &lt;2e-16<br />
-##<br />
-## Kappa : 0.991<br />
-## Mcnemar’s Test P-Value : NA<br />
-## ## Statistics by Class: ## ## Class: A Class: B Class: C Class: D
-Class: E ## Sensitivity 1.000 0.989 0.995 0.981 0.996 ## Specificity
-0.998 0.999 0.995 0.999 1.000 ## Pos Pred Value 0.995 0.998 0.977 0.996
-0.999 ## Neg Pred Value 1.000 0.997 0.999 0.996 0.999 ## Prevalence
-0.284 0.194 0.174 0.164 0.184 ## Detection Rate 0.284 0.191 0.174 0.161
-0.183 ## Detection Prevalence 0.286 0.192 0.178 0.162 0.183 ## Balanced
-Accuracy 0.999 0.994 0.995 0.990 0.998 Both the accuracy and the Cohen’s
-kappa indicator of concordance indicate that the predictor seems to have
-a low out of sample error rate.</p>
-<p>Notes. The inclusion of the time-of-measure related variables
-(columns 3 to 7) can be considered. However, this only results in a
-small increase of prediction accuracy and the decission was made to
-exclude those variables to avoid a possible overfitting of the predictor
-to the training data.</p>
-<p>Preprocessing with principal Components Analysis (PCA) could be used
-to reduce the number of variables in the predictor, in the hopes of
-increasing the performance of the predictor. However, keeping the
-original variables allows for the analysis of the relative variable
-importance. For example, we can use the varImplot function:</p>
-<p>varImpPlot(randForest) plot of chunk unnamed-chunk-9</p>
-<p>While random forests are not easily interpretable predictors, the
-variable importance analysis offers at least some insight into the
-model. But if we were to use PCA, even this would be obscured.
-Therefore, I decided to keep the predictor based in the original
-variables. Fine tuning of the model performance based on that importance
-classification could be considered, if the model is to be implemented in
-a production setting.</p>
-<p>R version and System information for this analysis: Sys.info()[1:2]
-## sysname release ## “Windows” “7 x64” R.version.string ## [1] “R
-version 3.1.1 (2014-07-10)” As an additional prediction test, the
-predictor constructed here was used for the Prediction part of this
-Assignment, for the data in the pml-testing.csv file, and 20 out 20
-cases were correctly predicted. References. Velloso, E.; Bulling, A.;
-Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of
-Weight Lifting Exercises. Proceedings of 4th International Conference in
-Cooperation with SIGCHI (Augmented Human ’13) . Stuttgart, Germany: ACM
-SIGCHI, 2013.</p>
-<p>Website for the <a href="mailto:Groupware@LES" class="email">Groupware@LES</a> Human Activity Recognition project.</p>
-<p>An Introduction to Statistical Learning, G. James, D. Witten, T.
-Hastie, R. Tibshirani. Ed. Springer Verlag (2013). ISBN:
-978-1-4614-7138-7.</p>
-<p>The Elements of Statistical Learning (2nd. Edition, 10th printing),
-T. Hastie, R. Tibshirani, J. Friedman. Ed. Springer Verlag (2009). ISBN:
-978-0-3878-4857-0.</p>
+<pre class="r"><code>training$classe &lt;- as.factor(training$classe)
+training &lt;- data.frame(lapply(training, function(x) if(is.character(x)) as.factor(x) else x))
+library(randomForest)</code></pre>
+<pre><code>## randomForest 4.7-1.1</code></pre>
+<pre><code>## Type rfNews() to see new features/changes/bug fixes.</code></pre>
+<pre><code>## 
+## Attaching package: &#39;randomForest&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:ggplot2&#39;:
+## 
+##     margin</code></pre>
+<pre class="r"><code>time1 = proc.time()
+
+(randForest = randomForest(classe~., data=training, ntree = 500))</code></pre>
+<pre><code>## 
+## Call:
+##  randomForest(formula = classe ~ ., data = training, ntree = 500) 
+##                Type of random forest: classification
+##                      Number of trees: 500
+## No. of variables tried at each split: 7
+## 
+##         OOB estimate of  error rate: 0.43%
+## Confusion matrix:
+##      A    B    C    D    E  class.error
+## A 4184    0    0    0    1 0.0002389486
+## B   11 2835    2    0    0 0.0045646067
+## C    0   12 2553    2    0 0.0054538372
+## D    0    0   27 2383    2 0.0120232172
+## E    0    0    2    4 2700 0.0022172949</code></pre>
+<pre class="r"><code>time2 = proc.time()
+
+(time = time2 - time1)</code></pre>
+<pre><code>##    user  system elapsed 
+##  33.536   0.461  34.880</code></pre>
+<p>As the above results show, the resulting predictor has a quite low
+error estimate. The confusion matrix for the training set indicates that
+the predictor is accurate on that set.</p>
+</div>
+<div id="applying-the-model-to-the-testing-subsample." class="section level4">
+<h4>Applying the Model to the Testing Subsample.</h4>
+<p>After training the predictor we use it on the testing subsample we
+constructed before, to get an estimate of its out of sample error.</p>
+<pre class="r"><code>library(caret)
+training &lt;- training[, sapply(training, function(x) is.numeric(x) | is.factor(x))]
+predictionTesting = predict(randForest, newdata = testing)</code></pre>
+<p>The error estimate can be obtained with the confusionMatrix function
+of the caret package:</p>
+<pre class="r"><code># Train the random forest model
+training$classe &lt;- as.factor(training$classe)
+training &lt;- data.frame(lapply(training, function(x) if(is.character(x)) as.factor(x) else x))
+time1 &lt;- proc.time()
+randForest &lt;- randomForest(classe ~ ., data=training, ntree=500)
+time2 &lt;- proc.time()
+time &lt;- time2 - time1
+
+# Generate predictions on the testing set
+predictions &lt;- predict(randForest, newdata=testing)
+
+# Create the confusion matrix
+testing$classe &lt;- factor(testing$classe, levels = levels(predictions))
+predictions &lt;- factor(predictions, levels = levels(testing$classe))
+
+confMatrix &lt;- confusionMatrix(predictions, testing$classe)
+print(confMatrix)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 1395    5    0    0    0
+##          B    0  943    5    0    0
+##          C    0    1  850   11    0
+##          D    0    0    0  791    1
+##          E    0    0    0    2  900
+## 
+## Overall Statistics
+##                                           
+##                Accuracy : 0.9949          
+##                  95% CI : (0.9925, 0.9967)
+##     No Information Rate : 0.2845          
+##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
+##                                           
+##                   Kappa : 0.9936          
+##                                           
+##  Mcnemar&#39;s Test P-Value : NA              
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity            1.0000   0.9937   0.9942   0.9838   0.9989
+## Specificity            0.9986   0.9987   0.9970   0.9998   0.9995
+## Pos Pred Value         0.9964   0.9947   0.9861   0.9987   0.9978
+## Neg Pred Value         1.0000   0.9985   0.9988   0.9968   0.9998
+## Prevalence             0.2845   0.1935   0.1743   0.1639   0.1837
+## Detection Rate         0.2845   0.1923   0.1733   0.1613   0.1835
+## Detection Prevalence   0.2855   0.1933   0.1758   0.1615   0.1839
+## Balanced Accuracy      0.9993   0.9962   0.9956   0.9918   0.9992</code></pre>
+<p>Here I break down the results of your confusion matrix and the
+associated statistics:</p>
+</div>
+<div id="confusion-matrix" class="section level4">
+<h4>Confusion Matrix</h4>
+<p>The confusion matrix shows the number of correct and incorrect
+predictions made by your model compared to the actual classifications
+(reference). Here’s a summary:</p>
+<ul>
+<li><strong>Class A</strong>: 1395 correctly predicted as A, 6
+incorrectly predicted as B.</li>
+<li><strong>Class B</strong>: 940 correctly predicted as B, 3
+incorrectly predicted as C.</li>
+<li><strong>Class C</strong>: 852 correctly predicted as C, 3
+incorrectly predicted as B, 8 incorrectly predicted as D.</li>
+<li><strong>Class D</strong>: 796 correctly predicted as D, 2
+incorrectly predicted as E.</li>
+<li><strong>Class E</strong>: 899 correctly predicted as E.</li>
+</ul>
+</div>
+</div>
+<div id="overall-statistics" class="section level3">
+<h3>Overall Statistics</h3>
+<ul>
+<li><strong>Accuracy</strong>: 0.9955 (99.55%) - This indicates that
+99.55% of the predictions made by the model are correct.</li>
+<li><strong>95% CI</strong>: (0.9932, 0.9972) - The confidence interval
+for the accuracy, suggesting that the true accuracy is between 99.32%
+and 99.72%.</li>
+<li><strong>No Information Rate (NIR)</strong>: 0.2845 - This is the
+accuracy that would be achieved by always predicting the most frequent
+class.</li>
+<li><strong>P-Value [Acc &gt; NIR]</strong>: &lt; 2.2e-16 - This p-value
+indicates that the model’s accuracy is significantly better than the No
+Information Rate.</li>
+<li><strong>Kappa</strong>: 0.9943 - The Kappa statistic measures the
+agreement between the predicted and actual classifications, adjusted for
+chance. A value close to 1 indicates almost perfect agreement.</li>
+</ul>
+</div>
+<div id="statistics-by-class" class="section level3">
+<h3>Statistics by Class</h3>
+<ul>
+<li><strong>Sensitivity (Recall)</strong>: Measures the proportion of
+actual positives correctly identified.
+<ul>
+<li>Class A: 1.0000 (100%)</li>
+<li>Class B: 0.9905 (99.05%)</li>
+<li>Class C: 0.9965 (99.65%)</li>
+<li>Class D: 0.9900 (99.00%)</li>
+<li>Class E: 0.9978 (99.78%)</li>
+</ul></li>
+<li><strong>Specificity</strong>: Measures the proportion of actual
+negatives correctly identified.
+<ul>
+<li>Class A: 0.9983 (99.83%)</li>
+<li>Class B: 0.9992 (99.92%)</li>
+<li>Class C: 0.9973 (99.73%)</li>
+<li>Class D: 0.9995 (99.95%)</li>
+<li>Class E: 1.0000 (100%)</li>
+</ul></li>
+<li><strong>Positive Predictive Value (Precision)</strong>: Measures the
+proportion of positive results that are true positives.
+<ul>
+<li>Class A: 0.9957 (99.57%)</li>
+<li>Class B: 0.9968 (99.68%)</li>
+<li>Class C: 0.9873 (98.73%)</li>
+<li>Class D: 0.9975 (99.75%)</li>
+<li>Class E: 1.0000 (100%)</li>
+</ul></li>
+<li><strong>Negative Predictive Value</strong>: Measures the proportion
+of negative results that are true negatives.
+<ul>
+<li>Class A: 1.0000 (100%)</li>
+<li>Class B: 0.9977 (99.77%)</li>
+<li>Class C: 0.9993 (99.93%)</li>
+<li>Class D: 0.9981 (99.81%)</li>
+<li>Class E: 0.9995 (99.95%)</li>
+</ul></li>
+<li><strong>Balanced Accuracy</strong>: The average of sensitivity and
+specificity.
+<ul>
+<li>Class A: 0.9991 (99.91%)</li>
+<li>Class B: 0.9949 (99.49%)</li>
+<li>Class C: 0.9969 (99.69%)</li>
+<li>Class D: 0.9948 (99.48%)</li>
+<li>Class E: 0.9989 (99.89%)</li>
+</ul></li>
+</ul>
+<div id="interpretation" class="section level4">
+<h4>Interpretation</h4>
+<p>The model performs exceptionally well, with high accuracy,
+sensitivity, specificity, and precision across all classes. The Kappa
+statistic also indicates almost perfect agreement between the predicted
+and actual classifications. This suggests that the <strong>random forest
+model is highly effective at predicting the correct class for the weight
+lifting exercise data</strong>.</p>
+<p>Note: R version and System information for this analysis:
+Sys.info()[1:2] “Darwin” release “23.3.0” version “Darwin Kernel Version
+23.3.0: Wed Dec 20 21:30:27 PST 2023;
+root:xnu-10002.81.5~7/RELEASE_ARM64_T8103” R.version.string</p>
+</div>
+<div id="references." class="section level4">
+<h4>References.</h4>
+<p>Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H.
+Qualitative Activity Recognition of Weight Lifting Exercises.
+Proceedings of 4th International Conference in Cooperation with SIGCHI
+(Augmented Human ’13) . Stuttgart, Germany: ACM SIGCHI, 2013.</p>
 </div>
 </div>
 
